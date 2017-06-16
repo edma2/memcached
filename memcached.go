@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -42,4 +43,32 @@ func ScanTextLines(data []byte, atEOF bool) (advance int, token []byte, err erro
 	}
 	// Request more data.
 	return 0, nil, nil
+}
+
+type Command interface {
+	isCommand() bool
+}
+
+type Set struct {
+	key     string
+	flags   uint16
+	exptime time.Time
+	bytes   uint64
+	noreply bool
+}
+
+type Get struct {
+	keys []string
+}
+
+func (s *Set) isCommand() bool {
+	return true
+}
+
+func (g *Get) isCommand() bool {
+	return true
+}
+
+func Parse(s string) Command {
+	return nil
 }
