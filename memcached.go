@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -61,14 +62,63 @@ type Get struct {
 	keys []string
 }
 
-func (s *Set) isCommand() bool {
+func (s Set) isCommand() bool {
 	return true
 }
 
-func (g *Get) isCommand() bool {
+func (g Get) isCommand() bool {
 	return true
 }
 
-func Parse(s string) Command {
-	return nil
+func Parse(s string) (Command, error) {
+	fields := strings.Fields(s)
+	if len(fields) == 0 {
+		return nil, errors.New("empty fields")
+	}
+	switch name := fields[0]; name {
+	case "get":
+		keys := fields[1:]
+		if len(keys) == 0 {
+			return nil, errors.New("get: no keys")
+		}
+		g := Get{keys: keys}
+		return &g, nil
+	case "set":
+		params := fields[1:]
+		if len(params) < 4 || len(params) > 5 {
+			return nil, errors.New("set: invalid parameter count")
+		}
+		s := Set{}
+		s.key = params[0]
+		flags, err := strconv.ParseUint(params[1], 10, 16)
+		if err != nil {
+			return nil, errors.New("set: invalid flags field")
+		}
+		s.flags = uint16(flags)
+		exptime, err := strconv.ParseUint(params[2], 10, 32)
+		if err != nil {
+			return nil, errors.New("set: invalid exptime field")
+		}
+		if exptime <= 2592000 { // number of seconds in 30 days
+			s.exptime = time.Now().Add(time.Duration(exptime) * time.Second)
+		} else {
+			s.exptime = time.Unix(int64(exptime), 0)
+		}
+		bytes, err := strconv.ParseUint(params[3], 10, 64)
+		if err != nil {
+			return nil, errors.New("set: invalid bytes (size) field")
+		}
+		s.bytes = bytes
+		if len(params) == 5 {
+			if params[4] == "noreply" {
+				s.noreply = true
+			} else {
+				return nil, errors.New("set: invalid noreply field")
+			}
+		} else {
+			s.noreply = false
+		}
+		return &s, nil
+	}
+	return nil, errors.New("unrecognized command")
 }
