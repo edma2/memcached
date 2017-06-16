@@ -13,7 +13,8 @@ func main() {
 	s := bufio.NewScanner(r)
 	s.Split(ScanTextLines)
 	for s.Scan() {
-		fmt.Printf("text: %s\n", s.Text())
+		line := s.Text()
+		fmt.Printf("text (%d): %s\n", len(line), line)
 	}
 	if err := s.Err(); err != nil {
 		fmt.Printf("scan error: %s\n", err)
