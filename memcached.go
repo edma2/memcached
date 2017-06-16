@@ -72,6 +72,14 @@ func (s Set) isCommand() bool {
 	return true
 }
 
+func (s Set) String() string {
+	return fmt.Sprintf("set %s %d %v %d %t", s.key, s.flags, s.exptime, s.bytes, s.noreply)
+}
+
+func (g Get) String() string {
+	return fmt.Sprintf("get %v", g.keys)
+}
+
 func (g Get) isCommand() bool {
 	return true
 }
