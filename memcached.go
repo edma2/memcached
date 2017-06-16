@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	r := strings.NewReader("hello\r\nworld\r\n")
+	r := strings.NewReader("abc\r\n")
 	s := bufio.NewScanner(r)
 	s.Split(ScanTextLines)
 	for s.Scan() {
