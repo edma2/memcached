@@ -5,14 +5,25 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 )
 
 func main() {
-	r := strings.NewReader("set k 1 13 20\r\n")
-	s := bufio.NewScanner(r)
+	i := Interpreter{r: os.Stdin, w: os.Stdout}
+	i.Loop()
+}
+
+type Interpreter struct {
+	r io.Reader
+	w io.Writer
+}
+
+func (i *Interpreter) Loop() {
+	s := bufio.NewScanner(i.r)
 	s.Split(ScanTextLines)
 	for s.Scan() {
 		line := s.Text()
@@ -22,6 +33,12 @@ func main() {
 			fmt.Printf("parse error: %v\n", err)
 		} else {
 			fmt.Printf("command: %v\n", cmd)
+		}
+		n, err := io.WriteString(i.w, "ok\r\n")
+		if err != nil {
+			fmt.Printf("write error: %v\n", err)
+		} else {
+			fmt.Printf("%d bytes written\n", n)
 		}
 	}
 	if err := s.Err(); err != nil {
