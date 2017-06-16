@@ -11,15 +11,21 @@ import (
 )
 
 func main() {
-	r := strings.NewReader("abc\r\n")
+	r := strings.NewReader("set k 1 13 20\r\n")
 	s := bufio.NewScanner(r)
 	s.Split(ScanTextLines)
 	for s.Scan() {
 		line := s.Text()
 		fmt.Printf("text (%d): %s\n", len(line), line)
+		cmd, err := Parse(line)
+		if err != nil {
+			fmt.Printf("parse error: %v\n", err)
+		} else {
+			fmt.Printf("command: %v\n", cmd)
+		}
 	}
 	if err := s.Err(); err != nil {
-		fmt.Printf("scan error: %s\n", err)
+		fmt.Printf("scan error: %v\n", err)
 	}
 }
 
